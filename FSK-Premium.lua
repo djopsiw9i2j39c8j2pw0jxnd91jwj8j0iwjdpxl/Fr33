@@ -622,7 +622,7 @@ Color = ColorSequence.new({
 })
 
 Window:Tag({
-    Title = "v2.6.0",
+    Title = "v2.6.2",
     Color = Color3.fromHex("#30ff6a")
 })
 
@@ -998,7 +998,7 @@ ui.Creator.Request = function(requestData)
     return nil
 end
 
-local InviteCode = "e99ewJj4t"
+local InviteCode = "CbWc5pC8f"
 local DiscordAPI =
     "https://discord.com/api/v10/invites/" .. InviteCode ..
     "?with_counts=true&with_expiration=true"
@@ -1098,7 +1098,7 @@ Info:Paragraph({
             Icon = "copy",
             Title = "Copy Link",
             Callback = function()
-                setclipboard("https://www.youtube.com/@htzgamingssr")
+                setclipboard("https://www.youtube.com/@slkgamingssr")
             end
         }
     }
@@ -5143,37 +5143,6 @@ TabHandles.Settings:Button({
     end
 })
 
-getgenv().chatWindow = game:GetService("TextChatService"):WaitForChild("ChatWindowConfiguration")
-getgenv().chatEnabled = false
-getgenv().chatConnection = nil
-
-TabHandles.Settings:Toggle({
-    Title = "Show Chat",
-    Locked = false,
-    Value = getgenv().chatEnabled,
-    Callback = function(Value)
-        getgenv().chatEnabled = Value
-
-        if Value then
-            if not getgenv().chatConnection then
-                getgenv().chatConnection = RunService.Heartbeat:Connect(function()
-                    if getgenv().chatWindow then
-                        getgenv().chatWindow.Enabled = true
-                    end
-                end)
-            end
-        else
-            if getgenv().chatConnection then
-                getgenv().chatConnection:Disconnect()
-                getgenv().chatConnection = nil
-            end
-            if getgenv().chatWindow then
-                getgenv().chatWindow.Enabled = false
-            end
-        end
-    end
-})
-
 TabHandles.Settings:Toggle({
     Title = "Remove Effects",
     Locked = false,
@@ -5350,3 +5319,135 @@ RunService.RenderStepped:Connect(function()
         end
     end
 end)
+
+TabHandles.Settings:Section({ Title = "Show", Icon = "eye" })
+
+do
+getgenv().showFPS = true
+getgenv().showPing = true
+
+local ui = CoreGui:FindFirstChild("FPS_Ping_Display")
+if not ui then
+    ui = Instance.new("ScreenGui")
+    ui.Name = "FPS_Ping_Display"
+    ui.ResetOnSpawn = false
+    ui.IgnoreGuiInset = true
+    ui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    ui.Parent = CoreGui
+end
+
+local fpsLabel = ui:FindFirstChild("FPSLabel")
+if not fpsLabel then
+    fpsLabel = Instance.new("TextLabel")
+    fpsLabel.Name = "FPSLabel"
+    fpsLabel.Size = UDim2.new(0, 120, 0, 20)
+    fpsLabel.Position = UDim2.new(1, -130, 0, 5)
+    fpsLabel.BackgroundTransparency = 1
+    fpsLabel.TextStrokeTransparency = 0
+    fpsLabel.TextSize = 16
+    fpsLabel.Font = Enum.Font.Code
+    fpsLabel.TextXAlignment = Enum.TextXAlignment.Left
+    fpsLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+    fpsLabel.Text = "FPS: ..."
+    fpsLabel.Parent = ui
+end
+
+local pingLabel = ui:FindFirstChild("PingLabel")
+if not pingLabel then
+    pingLabel = fpsLabel:Clone()
+    pingLabel.Name = "PingLabel"
+    pingLabel.Position = UDim2.new(1, -130, 0, 25)
+    pingLabel.Text = "Ping: ..."
+    pingLabel.Parent = ui
+end
+
+local fpsCounter = 0
+local lastUpdate = tick()
+
+if not getgenv()._FPSPingConnection then
+    getgenv()._FPSPingConnection = RunService.RenderStepped:Connect(function()
+        fpsCounter += 1
+
+        if tick() - lastUpdate >= 1 then
+            if getgenv().showFPS then
+                fpsLabel.Visible = true
+                fpsLabel.Text = "FPS: " .. fpsCounter
+            else
+                fpsLabel.Visible = false
+            end
+
+            if getgenv().showPing then
+                local pingStat = Stats.Network.ServerStatsItem["Data Ping"]
+                local ping = pingStat and math.floor(pingStat:GetValue()) or 0
+
+                pingLabel.Text = "Ping: " .. ping .. " ms"
+                pingLabel.Visible = true
+
+                if ping <= 60 then
+                    pingLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+                elseif ping <= 120 then
+                    pingLabel.TextColor3 = Color3.fromRGB(255, 165, 0)
+                else
+                    pingLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+                end
+            else
+                pingLabel.Visible = false
+            end
+
+            fpsCounter = 0
+            lastUpdate = tick()
+        end
+    end)
+end
+
+TabHandles.Settings:Toggle({
+    Title = "Show FPS",
+    Locked = false,
+    Value = getgenv().showFPS,
+    Callback = function(v)
+        getgenv().showFPS = v
+        fpsLabel.Visible = v
+    end
+})
+
+TabHandles.Settings:Toggle({
+    Title = "Show Ping",
+    Locked = false,
+    Value = getgenv().showPing,
+    Callback = function(v)
+        getgenv().showPing = v
+        pingLabel.Visible = v
+    end
+})
+end
+
+getgenv().chatWindow = game:GetService("TextChatService"):WaitForChild("ChatWindowConfiguration")
+getgenv().chatEnabled = false
+getgenv().chatConnection = nil
+
+TabHandles.Settings:Toggle({
+    Title = "Show Chat",
+    Locked = false,
+    Value = getgenv().chatEnabled,
+    Callback = function(Value)
+        getgenv().chatEnabled = Value
+
+        if Value then
+            if not getgenv().chatConnection then
+                getgenv().chatConnection = RunService.Heartbeat:Connect(function()
+                    if getgenv().chatWindow then
+                        getgenv().chatWindow.Enabled = true
+                    end
+                end)
+            end
+        else
+            if getgenv().chatConnection then
+                getgenv().chatConnection:Disconnect()
+                getgenv().chatConnection = nil
+            end
+            if getgenv().chatWindow then
+                getgenv().chatWindow.Enabled = false
+            end
+        end
+    end
+})
