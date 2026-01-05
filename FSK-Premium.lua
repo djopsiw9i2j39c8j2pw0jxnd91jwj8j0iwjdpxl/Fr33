@@ -5054,54 +5054,6 @@ TabHandles.Settings:Toggle({
 
 TabHandles.Settings:Section({ Title = "Fix Lag", Icon = "cpu" })
 
-local ActiveRemoveAll = false
-local effectNames = {
-    "BlurEffect", "ColorCorrectionEffect", "BloomEffect", "SunRaysEffect", 
-    "DepthOfFieldEffect", "ScreenFlash", "HitEffect", "DamageOverlay", 
-    "BloodEffect", "Vignette", "BlackScreen", "WhiteScreen", "ShockEffect",
-    "Darkness", "JumpScare", "LowHealthOverlay", "Flashbang", "FadeEffect"
-}
-
-local effectClasses = {
-    "BlurEffect",
-    "BloomEffect",
-    "SunRaysEffect",
-    "DepthOfFieldEffect",
-    "ColorCorrectionEffect"
-}
-
-local function safeGetPlayerGui()
-    local gui = getPlayerGui()
-    if gui and gui.Parent ~= nil then
-        return gui
-    end
-    return nil
-end
-
-local function removeAll()
-    for _, obj in pairs(Lighting:GetDescendants()) do
-        if table.find(effectNames, obj.Name) or table.find(effectClasses, obj.ClassName) then
-            obj:Destroy()
-        end
-    end
-
-    local PlayerGui = safeGetPlayerGui()
-    if not PlayerGui then return end
-
-    for _, obj in pairs(PlayerGui:GetDescendants()) do
-        if table.find(effectNames, obj.Name) then
-            obj:Destroy()
-        elseif (obj:IsA("ScreenGui") or obj:IsA("BillboardGui") or obj:IsA("SurfaceGui")) then
-            local lower = obj.Name:lower()
-            if obj:FindFirstChildWhichIsA("ImageLabel") or obj:FindFirstChildWhichIsA("Frame") then
-                if table.find(effectNames, obj.Name) or lower:find("overlay") or lower:find("effect") then
-                    obj:Destroy()
-                end
-            end
-        end
-    end
-end
-
 local function ServerHop()
     local placeId = game.PlaceId
     local jobId = game.JobId
@@ -5143,51 +5095,133 @@ TabHandles.Settings:Button({
     end
 })
 
-TabHandles.Settings:Toggle({
-    Title = "Remove Effects",
-    Locked = false,
-    Value = true,
-    Callback = function(Value)
-        ActiveRemoveAll = Value
+do
+local RemoveEffectsEnabled = false
+local RemoveEffectsLoopRunning = false
 
-        if Value then
-            task.spawn(function()
-                while ActiveRemoveAll do
-                    pcall(removeAll)
-                    task.wait(0.5)
+local effectNames = {
+    "BlurEffect", "ColorCorrectionEffect", "BloomEffect", "SunRaysEffect", 
+    "DepthOfFieldEffect", "ScreenFlash", "HitEffect", "DamageOverlay", 
+    "BloodEffect", "Vignette", "BlackScreen", "WhiteScreen", "ShockEffect",
+    "Darkness", "JumpScare", "LowHealthOverlay", "Flashbang", "FadeEffect"
+}
+
+local effectClasses = {
+    "BlurEffect",
+    "BloomEffect",
+    "SunRaysEffect",
+    "DepthOfFieldEffect",
+    "ColorCorrectionEffect"
+}
+
+local function removeAllEffects()
+    local pg = getPlayerGui()
+    if not pg then return end
+
+    for _, obj in ipairs(Lighting:GetDescendants()) do
+        pcall(function()
+            if table.find(effectNames, obj.Name) or table.find(effectClasses, obj.ClassName) then
+                obj:Destroy()
+            end
+        end)
+    end
+
+    for _, obj in ipairs(pg:GetDescendants()) do
+        pcall(function()
+            if table.find(effectNames, obj.Name) then
+                obj:Destroy()
+            elseif obj:IsA("ScreenGui") or obj:IsA("BillboardGui") or obj:IsA("SurfaceGui") then
+                if obj:FindFirstChildWhichIsA("ImageLabel") or obj:FindFirstChildWhichIsA("Frame") then
+                    if table.find(effectNames, obj.Name) or obj.Name:lower():find("overlay") or obj.Name:lower():find("effect") then
+                        obj:Destroy()
+                    end
                 end
-            end)
+            end
+        end)
+    end
+end
+
+local function RemoveEffectsLoop()
+    if RemoveEffectsLoopRunning then return end
+    RemoveEffectsLoopRunning = true
+
+    task.spawn(function()
+        while RemoveEffectsEnabled do
+            local ok, err = pcall(removeAllEffects)
+            if not ok then
+                warn("[RemoveEffects] Error:", err)
+            end
+
+            task.wait(0.5)
+        end
+        RemoveEffectsLoopRunning = false
+    end)
+end
+
+getgenv().RemoveAllBadStuff = true
+RemoveEffectsEnabled = true
+
+TabHandles.Settings:Toggle({
+    Title = "Remove Effects V2",
+    Locked = false,
+    Value = getgenv().RemoveAllBadStuff,
+    Callback = function(state)
+        getgenv().RemoveAllBadStuff = state
+        RemoveEffectsEnabled = state
+
+        if state then
+            RemoveEffectsLoop()
         end
     end
 })
 
+RemoveEffectsLoop()
+end
+
 TabHandles.Settings:Section({ Title = "Game Play", Icon = "joystick" })
 
-local ASConfigs = {
-    Slowness = {Values = {"SlowedStatus"}, Enabled = false},
-    Skills = {
-        Values = {
-            "StunningKiller","EatFriedChicken","GuestBlocking","PunchAbility","SubspaceTripmine",
-            "TaphTripwire","PlasmaBeam","SpawnProtection","c00lgui","ShootingGun",
-            "TwoTimeStab","TwoTimeCrouching","DrinkingCola","DrinkingSlateskin",
-            "SlateskinStatus","EatingGhostburger"
-        },
-        Enabled = false
+local SurvivorsFolder = getSurvivorsFolder()
+
+local AntiSlowEnabled = false
+local AntiSlowLoopRunning = false
+
+getgenv().AntiSlow_All = false
+
+local AntiSlowConfigs = {
+    Slowness = {
+        Enabled = false,
+        Values = {"SlowedStatus"}
     },
-    Items = {Values = {"BloxyColaItem","Medkit"}, Enabled = false},
-    Emotes = {Values = {"Emoting"}, Enabled = false},
-    Builderman = {Values = {"DispenserConstruction","SentryConstruction"}, Enabled = false}
+    Skills = {
+        Enabled = false,
+        Values = {
+            "StunningKiller", "EatFriedChicken", "GuestBlocking",
+            "PunchAbility", "SubspaceTripmine", "TaphTripwire",
+            "PlasmaBeam", "SpawnProtection", "c00lgui",
+            "ShootingGun", "TwoTimeStab", "TwoTimeCrouching",
+            "DrinkingCola", "DrinkingSlateskin",
+            "SlateskinStatus", "EatingGhostburger"
+        }
+    },
+    Items = {
+        Enabled = false,
+        Values = {"BloxyColaItem", "Medkit"}
+    },
+    Emotes = {
+        Enabled = false,
+        Values = {"Emoting"}
+    },
+    Builderman = {
+        Enabled = false,
+        Values = {"DispenserConstruction", "SentryConstruction"}
+    }
 }
 
-local DoAutoPopup = false
-local AutoClickActiveButton = false
-local clickedButtons = {}
-
 local function hideSlownessUI()
-    local gui = getPlayerGui()
-    if not gui then return end
+    local pg = getPlayerGui()
+    if not pg then return end
 
-    local mainUI = gui:FindFirstChild("MainUI")
+    local mainUI = pg:FindFirstChild("MainUI")
     if not mainUI then return end
 
     local status = mainUI:FindFirstChild("StatusContainer")
@@ -5199,21 +5233,20 @@ local function hideSlownessUI()
     end
 end
 
-local function applyAntiSlow()
-    local survivors = getSurvivorsFolder()
-    local char = getChar()
-    if not survivors or not char then return end
+local function processSurvivor(survivor)
+    if survivor:GetAttribute("Username") ~= LocalPlayer.Name then
+        return
+    end
 
-    local model = survivors:FindFirstChild(char.Name)
-    if not model then return end
+    local speedFolder = survivor:FindFirstChild("SpeedMultipliers")
+    if not speedFolder then
+        return
+    end
 
-    local speedMult = model:FindFirstChild("SpeedMultipliers")
-    if not speedMult then return end
-
-    for _, cfg in pairs(ASConfigs) do
+    for _, cfg in pairs(AntiSlowConfigs) do
         if cfg.Enabled then
-            for _, valName in ipairs(cfg.Values) do
-                local val = speedMult:FindFirstChild(valName)
+            for _, valueName in ipairs(cfg.Values) do
+                local val = speedFolder:FindFirstChild(valueName)
                 if val and val:IsA("NumberValue") and val.Value ~= 1 then
                     val.Value = 1
                 end
@@ -5224,101 +5257,126 @@ local function applyAntiSlow()
     hideSlownessUI()
 end
 
-local function applyAutoPopup()
-    local gui = getPlayerGui()
-    if gui then
-        local tempUI = gui:FindFirstChild("TemporaryUI")
-        if tempUI then
-            local popup = tempUI:FindFirstChild("1x1x1x1Popup")
-            if popup then popup:Destroy() end
+local function AntiSlowLoop()
+    if AntiSlowLoopRunning then return end
+    AntiSlowLoopRunning = true
+
+    task.spawn(function()
+        while AntiSlowEnabled do
+            SurvivorsFolder = getSurvivorsFolder()
+
+            if SurvivorsFolder then
+                for _, survivor in ipairs(SurvivorsFolder:GetChildren()) do
+                    processSurvivor(survivor)
+                end
+            end
+
+            task.wait(0.25)
         end
-    end
 
-    local survivors = getSurvivorsFolder()
-    local char = getChar()
-    if not survivors or not char then return end
-
-    local model = survivors:FindFirstChild(char.Name)
-    if not model then return end
-
-    local speed = model:FindFirstChild("SpeedMultipliers")
-    if speed then
-        local v = speed:FindFirstChild("SlowedStatus")
-        if v then v.Value = 1 end
-    end
-
-    local fov = model:FindFirstChild("FOVMultipliers")
-    if fov then
-        local v = fov:FindFirstChild("SlowedStatus")
-        if v then v.Value = 1 end
-    end
+        AntiSlowLoopRunning = false
+    end)
 end
 
-RunService.Heartbeat:Connect(function()
-    applyAntiSlow()
-    if DoAutoPopup then
-        applyAutoPopup()
+local function StartAntiSlow()
+    AntiSlowEnabled = true
+    for _, cfg in pairs(AntiSlowConfigs) do
+        cfg.Enabled = true
     end
-end)
+    AntiSlowLoop()
+end
+
+local function StopAntiSlow()
+    AntiSlowEnabled = false
+    for _, cfg in pairs(AntiSlowConfigs) do
+        cfg.Enabled = false
+    end
+end
 
 TabHandles.Settings:Toggle({
     Title = "Anti-Slow",
     Locked = false,
-    Value = false,
-    Callback = function(v)
-        for _, cfg in pairs(ASConfigs) do
-            cfg.Enabled = v
+    Value = getgenv().AntiSlow_All,
+    Callback = function(state)
+        getgenv().AntiSlow_All = state
+
+        if state then
+            StartAntiSlow()
+        else
+            StopAntiSlow()
         end
     end
 })
+
+-- ===============================
+-- AUTO CLOSE POPUP V2 (OLD TOGGLE STYLE)
+-- ===============================
+
+local AutoCloseEnabled = false
+local AutoCloseConnection = nil
+
+-- lấy survivor của chính mình
+local function getLocalSurvivor()
+    local folder = getSurvivorsFolder()
+    if not folder then return nil end
+
+    for _, survivor in pairs(folder:GetChildren()) do
+        if survivor:GetAttribute("Username") == LocalPlayer.Name then
+            return survivor
+        end
+    end
+
+    return nil
+end
+
+local function resetMultiplier(folder, valueName)
+    if not folder then return end
+    local val = folder:FindFirstChild(valueName)
+    if val and val:IsA("NumberValue") then
+        val.Value = 1
+    end
+end
+
+local function AutoCloseStep()
+    -- delete popup
+    local pg = getPlayerGui()
+    if pg then
+        local temp = pg:FindFirstChild("TemporaryUI")
+        if temp then
+            local popup = temp:FindFirstChild("1x1x1x1Popup")
+            if popup then
+                popup:Destroy()
+            end
+        end
+    end
+
+    -- reset slow & fov
+    local survivor = getLocalSurvivor()
+    if not survivor then return end
+
+    resetMultiplier(survivor:FindFirstChild("SpeedMultipliers"), "SlowedStatus")
+    resetMultiplier(survivor:FindFirstChild("FOVMultipliers"), "SlowedStatus")
+end
 
 TabHandles.Settings:Toggle({
     Title = "Delete 1x Popups",
     Locked = false,
     Value = true,
     Callback = function(v)
-        DoAutoPopup = v
-    end
-})
+        AutoCloseEnabled = v
 
-TabHandles.Settings:Toggle({
-    Title = "Detele ActiveButton",
-    Locked = false,
-    Value = false,
-    Callback = function(state)
-        AutoClickActiveButton = state
-        if not state then
-            table.clear(clickedButtons)
+        if AutoCloseEnabled then
+            if not AutoCloseConnection then
+                AutoCloseConnection = RunService.Heartbeat:Connect(AutoCloseStep)
+            end
+        else
+            if AutoCloseConnection then
+                AutoCloseConnection:Disconnect()
+                AutoCloseConnection = nil
+            end
         end
     end
 })
-
-RunService.RenderStepped:Connect(function()
-    if not AutoClickActiveButton then return end
-
-    local playerGui = getPlayerGui()
-    if not playerGui then return end
-
-    local gui = playerGui:FindFirstChildWhichIsA("ScreenGui", true)
-    if not gui then return end
-
-    local tempUI = gui:FindFirstChild("TemporaryUI")
-    if not tempUI then return end
-
-    for _, v in ipairs(tempUI:GetDescendants()) do
-        if v.Name == "ActiveButton"
-        and (v:IsA("ImageButton") or v:IsA("TextButton"))
-        and v.Visible
-        and not clickedButtons[v] then
-
-            clickedButtons[v] = true
-
-            pcall(function()
-                v:Destroy()
-            end)
-        end
-    end
-end)
 
 TabHandles.Settings:Section({ Title = "Show", Icon = "eye" })
 
@@ -5366,7 +5424,7 @@ local lastUpdate = tick()
 
 if not getgenv()._FPSPingConnection then
     getgenv()._FPSPingConnection = RunService.RenderStepped:Connect(function()
-        fpsCounter += 1
+        fpsCounter = fpsCounter + 1
 
         if tick() - lastUpdate >= 1 then
             if getgenv().showFPS then
