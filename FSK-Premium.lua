@@ -622,7 +622,7 @@ Color = ColorSequence.new({
 })
 
 Window:Tag({
-    Title = "v2.6.2",
+    Title = "v2.6.4",
     Color = Color3.fromHex("#30ff6a")
 })
 
@@ -1134,8 +1134,8 @@ local SkillList = {
     "PizzaDelivery", "UnstableEye", "Entanglement",
     "DigitalFootprint", "404Error", "Cataclysm",
     "RagingPace", "Carving Slash", "DemonicPursuit",
-    "InfernalCry", "Blood Rush", "Ascension", "Hunter'sFeast",
-    "Bloodhook", "Lacerate", "BloodHunt"
+    "InfernalCry", "Blood Rush", "Ascent", "Bats",
+    "Uppercut", "Lacerate", "BloodHunt", "Spire"
 }
 
 local function findRemoteByName_safe(name)
@@ -5097,69 +5097,98 @@ TabHandles.Settings:Button({
 
 do
 local RemoveEffectsEnabled = false
-local RemoveEffectsLoopRunning = false
+local LightingConn = nil
+local GuiConn = nil
 
-local effectNames = {
-    "BlurEffect", "ColorCorrectionEffect", "BloomEffect", "SunRaysEffect", 
-    "DepthOfFieldEffect", "ScreenFlash", "HitEffect", "DamageOverlay", 
-    "BloodEffect", "Vignette", "BlackScreen", "WhiteScreen", "ShockEffect",
-    "Darkness", "JumpScare", "LowHealthOverlay", "Flashbang", "FadeEffect"
+local EffectNameSet = {
+    BlurEffect = true,
+    ColorCorrectionEffect = true,
+    BloomEffect = true,
+    SunRaysEffect = true,
+    DepthOfFieldEffect = true,
+    ScreenFlash = true,
+    HitEffect = true,
+    DamageOverlay = true,
+    BloodEffect = true,
+    Vignette = true,
+    BlackScreen = true,
+    WhiteScreen = true,
+    ShockEffect = true,
+    Darkness = true,
+    JumpScare = true,
+    LowHealthOverlay = true,
+    Flashbang = true,
+    FadeEffect = true
 }
 
-local effectClasses = {
-    "BlurEffect",
-    "BloomEffect",
-    "SunRaysEffect",
-    "DepthOfFieldEffect",
-    "ColorCorrectionEffect"
+local EffectClassSet = {
+    BlurEffect = true,
+    BloomEffect = true,
+    SunRaysEffect = true,
+    DepthOfFieldEffect = true,
+    ColorCorrectionEffect = true
 }
 
-local function removeAllEffects()
+local function shouldRemove(obj)
+    if EffectNameSet[obj.Name] then
+        return true
+    end
+
+    if EffectClassSet[obj.ClassName] then
+        return true
+    end
+
+    if obj:IsA("ScreenGui") or obj:IsA("BillboardGui") or obj:IsA("SurfaceGui") then
+        local lname = obj.Name:lower()
+        if lname:find("overlay") or lname:find("effect") then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function tryRemove(obj)
+    if not RemoveEffectsEnabled then return end
+    if obj and obj.Parent and shouldRemove(obj) then
+        obj:Destroy()
+    end
+end
+
+local function EnableRemoveEffects()
+    if RemoveEffectsEnabled then return end
+    RemoveEffectsEnabled = true
+
     local pg = getPlayerGui()
     if not pg then return end
 
     for _, obj in ipairs(Lighting:GetDescendants()) do
-        pcall(function()
-            if table.find(effectNames, obj.Name) or table.find(effectClasses, obj.ClassName) then
-                obj:Destroy()
-            end
-        end)
+        tryRemove(obj)
     end
 
     for _, obj in ipairs(pg:GetDescendants()) do
-        pcall(function()
-            if table.find(effectNames, obj.Name) then
-                obj:Destroy()
-            elseif obj:IsA("ScreenGui") or obj:IsA("BillboardGui") or obj:IsA("SurfaceGui") then
-                if obj:FindFirstChildWhichIsA("ImageLabel") or obj:FindFirstChildWhichIsA("Frame") then
-                    if table.find(effectNames, obj.Name) or obj.Name:lower():find("overlay") or obj.Name:lower():find("effect") then
-                        obj:Destroy()
-                    end
-                end
-            end
-        end)
+        tryRemove(obj)
+    end
+
+    LightingConn = Lighting.DescendantAdded:Connect(tryRemove)
+    GuiConn = pg.DescendantAdded:Connect(tryRemove)
+end
+
+local function DisableRemoveEffects()
+    RemoveEffectsEnabled = false
+
+    if LightingConn then
+        LightingConn:Disconnect()
+        LightingConn = nil
+    end
+
+    if GuiConn then
+        GuiConn:Disconnect()
+        GuiConn = nil
     end
 end
 
-local function RemoveEffectsLoop()
-    if RemoveEffectsLoopRunning then return end
-    RemoveEffectsLoopRunning = true
-
-    task.spawn(function()
-        while RemoveEffectsEnabled do
-            local ok, err = pcall(removeAllEffects)
-            if not ok then
-                warn("[RemoveEffects] Error:", err)
-            end
-
-            task.wait(0.5)
-        end
-        RemoveEffectsLoopRunning = false
-    end)
-end
-
-getgenv().RemoveAllBadStuff = true
-RemoveEffectsEnabled = true
+getgenv().RemoveAllBadStuff = false
 
 TabHandles.Settings:Toggle({
     Title = "Remove Effects V2",
@@ -5167,15 +5196,13 @@ TabHandles.Settings:Toggle({
     Value = getgenv().RemoveAllBadStuff,
     Callback = function(state)
         getgenv().RemoveAllBadStuff = state
-        RemoveEffectsEnabled = state
-
         if state then
-            RemoveEffectsLoop()
+            EnableRemoveEffects()
+        else
+            DisableRemoveEffects()
         end
     end
 })
-
-RemoveEffectsLoop()
 end
 
 TabHandles.Settings:Section({ Title = "Game Play", Icon = "joystick" })
@@ -5308,54 +5335,20 @@ TabHandles.Settings:Toggle({
     end
 })
 
--- ===============================
--- AUTO CLOSE POPUP V2 (OLD TOGGLE STYLE)
--- ===============================
-
 local AutoCloseEnabled = false
 local AutoCloseConnection = nil
 
--- lấy survivor của chính mình
-local function getLocalSurvivor()
-    local folder = getSurvivorsFolder()
-    if not folder then return nil end
-
-    for _, survivor in pairs(folder:GetChildren()) do
-        if survivor:GetAttribute("Username") == LocalPlayer.Name then
-            return survivor
-        end
-    end
-
-    return nil
-end
-
-local function resetMultiplier(folder, valueName)
-    if not folder then return end
-    local val = folder:FindFirstChild(valueName)
-    if val and val:IsA("NumberValue") then
-        val.Value = 1
-    end
-end
-
 local function AutoCloseStep()
-    -- delete popup
     local pg = getPlayerGui()
-    if pg then
-        local temp = pg:FindFirstChild("TemporaryUI")
-        if temp then
-            local popup = temp:FindFirstChild("1x1x1x1Popup")
-            if popup then
-                popup:Destroy()
-            end
-        end
+    if not pg then return end
+
+    local temp = pg:FindFirstChild("TemporaryUI", true)
+    if not temp then return end
+
+    local popup = temp:FindFirstChild("1x1x1x1Popup", true)
+    if popup then
+        popup:Destroy()
     end
-
-    -- reset slow & fov
-    local survivor = getLocalSurvivor()
-    if not survivor then return end
-
-    resetMultiplier(survivor:FindFirstChild("SpeedMultipliers"), "SlowedStatus")
-    resetMultiplier(survivor:FindFirstChild("FOVMultipliers"), "SlowedStatus")
 end
 
 TabHandles.Settings:Toggle({
@@ -5365,7 +5358,7 @@ TabHandles.Settings:Toggle({
     Callback = function(v)
         AutoCloseEnabled = v
 
-        if AutoCloseEnabled then
+        if v then
             if not AutoCloseConnection then
                 AutoCloseConnection = RunService.Heartbeat:Connect(AutoCloseStep)
             end
@@ -5377,107 +5370,6 @@ TabHandles.Settings:Toggle({
         end
     end
 })
-
-TabHandles.Settings:Section({ Title = "Show", Icon = "eye" })
-
-do
-getgenv().showFPS = true
-getgenv().showPing = true
-
-local ui = CoreGui:FindFirstChild("FPS_Ping_Display")
-if not ui then
-    ui = Instance.new("ScreenGui")
-    ui.Name = "FPS_Ping_Display"
-    ui.ResetOnSpawn = false
-    ui.IgnoreGuiInset = true
-    ui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    ui.Parent = CoreGui
-end
-
-local fpsLabel = ui:FindFirstChild("FPSLabel")
-if not fpsLabel then
-    fpsLabel = Instance.new("TextLabel")
-    fpsLabel.Name = "FPSLabel"
-    fpsLabel.Size = UDim2.new(0, 120, 0, 20)
-    fpsLabel.Position = UDim2.new(1, -130, 0, 5)
-    fpsLabel.BackgroundTransparency = 1
-    fpsLabel.TextStrokeTransparency = 0
-    fpsLabel.TextSize = 16
-    fpsLabel.Font = Enum.Font.Code
-    fpsLabel.TextXAlignment = Enum.TextXAlignment.Left
-    fpsLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-    fpsLabel.Text = "FPS: ..."
-    fpsLabel.Parent = ui
-end
-
-local pingLabel = ui:FindFirstChild("PingLabel")
-if not pingLabel then
-    pingLabel = fpsLabel:Clone()
-    pingLabel.Name = "PingLabel"
-    pingLabel.Position = UDim2.new(1, -130, 0, 25)
-    pingLabel.Text = "Ping: ..."
-    pingLabel.Parent = ui
-end
-
-local fpsCounter = 0
-local lastUpdate = tick()
-
-if not getgenv()._FPSPingConnection then
-    getgenv()._FPSPingConnection = RunService.RenderStepped:Connect(function()
-        fpsCounter = fpsCounter + 1
-
-        if tick() - lastUpdate >= 1 then
-            if getgenv().showFPS then
-                fpsLabel.Visible = true
-                fpsLabel.Text = "FPS: " .. fpsCounter
-            else
-                fpsLabel.Visible = false
-            end
-
-            if getgenv().showPing then
-                local pingStat = Stats.Network.ServerStatsItem["Data Ping"]
-                local ping = pingStat and math.floor(pingStat:GetValue()) or 0
-
-                pingLabel.Text = "Ping: " .. ping .. " ms"
-                pingLabel.Visible = true
-
-                if ping <= 60 then
-                    pingLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-                elseif ping <= 120 then
-                    pingLabel.TextColor3 = Color3.fromRGB(255, 165, 0)
-                else
-                    pingLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-                end
-            else
-                pingLabel.Visible = false
-            end
-
-            fpsCounter = 0
-            lastUpdate = tick()
-        end
-    end)
-end
-
-TabHandles.Settings:Toggle({
-    Title = "Show FPS",
-    Locked = false,
-    Value = getgenv().showFPS,
-    Callback = function(v)
-        getgenv().showFPS = v
-        fpsLabel.Visible = v
-    end
-})
-
-TabHandles.Settings:Toggle({
-    Title = "Show Ping",
-    Locked = false,
-    Value = getgenv().showPing,
-    Callback = function(v)
-        getgenv().showPing = v
-        pingLabel.Visible = v
-    end
-})
-end
 
 getgenv().chatWindow = game:GetService("TextChatService"):WaitForChild("ChatWindowConfiguration")
 getgenv().chatEnabled = false
