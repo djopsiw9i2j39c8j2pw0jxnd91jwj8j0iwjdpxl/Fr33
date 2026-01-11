@@ -10884,25 +10884,25 @@ v618:AddSection({
     "Buy Melee V1"
 })
 v618:AddButton({
-    Name = "Buy Black Leg $150,000",
+    Name = "Buy Black Leg [ $150,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyBlackLeg")
     end
 })
 v618:AddButton({
-    Name = "Buy Electro $550,000",
+    Name = "Buy Electro [ $550,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyElectro")
     end
 })
 v618:AddButton({
-    Name = "Buy Water Kung Fu $750,000",
+    Name = "Buy Water Kung Fu [ $750,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyFishmanKarate")
     end
 })
 v618:AddButton({
-    Name = "Buy Dragon Claw 1,500F",
+    Name = "Buy Dragon Claw [ 1,500F ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BlackbeardReward", "DragonClaw", "1")
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BlackbeardReward", "DragonClaw", "2")
@@ -10912,44 +10912,44 @@ v618:AddSection({
     "Buy Melee V2"
 })
 v618:AddButton({
-    Name = "Buy Superhuman $3,000,000",
+    Name = "Buy Superhuman [ $3,000,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuySuperhuman")
     end
 })
 v618:AddButton({
-    Name = "Buy Death Step $5,000,000 5,000F",
+    Name = "Buy Death Step [ $5,000,000 + 5,000F ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyDeathStep")
     end
 })
 v618:AddButton({
-    Name = "Buy Sharkman Karate $2,500,000 5,000F",
+    Name = "Buy Sharkman Karate [ $2,500,000 + 5,000F ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuySharkmanKarate", true)
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuySharkmanKarate")
     end
 })
 v618:AddButton({
-    Name = "Buy Electric Claw $3,000,000 5,000F",
+    Name = "Buy Electric Claw [ $3,000,000 + 5,000F ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyElectricClaw")
     end
 })
 v618:AddButton({
-    Name = "Buy Dragon Talon $3,000,000 5,000F",
+    Name = "Buy Dragon Talon [ $3,000,000 + 5,000F ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyDragonTalon")
     end
 })
 v618:AddButton({
-    Name = "Buy God Human $5,000,000 5,000F",
+    Name = "Buy God Human [ $5,000,000 + 5,000F ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyGodhuman")
     end
 })
 v618:AddButton({
-    Name = "Buy Sanguine Art $5,000,000 5,000F",
+    Name = "Buy Sanguine Art [ $5,000,000 + 5,000F ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuySanguineArt", true)
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuySanguineArt")
@@ -11028,118 +11028,121 @@ v618:AddSection({
     "Buy Haki,Soru..."
 })
 v618:AddButton({
-    Name = "Buy Geppo $10,000",
+    Name = "Buy Geppo [ $10,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyHaki", "Geppo")
     end
 })
 v618:AddButton({
-    Name = "Buy Buso Haki $25,000",
+    Name = "Buy Buso Haki [ $25,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyHaki", "Buso")
     end
 })
 v618:AddButton({
-    Name = "Buy Soru $25,000",
+    Name = "Buy Soru [ $100,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyHaki", "Soru")
     end
 })
 v618:AddButton({
-    Name = "Buy Observation Haki $750,000",
+    Name = "Buy Observation Haki [ $750,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("KenTalk", "Buy")
     end
 })
 v618:AddSection({
-    "Buy Sword,Gun"
+    "Buy Sword"
 })
 v618:AddButton({
-    Name = "Buy Cutlass $1,000",
+    Name = "Buy Cutlass [ $1,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem", "Cutlass")
     end
 })
 v618:AddButton({
-    Name = "Buy Katana $1,000",
+    Name = "Buy Katana [ $1,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem", "Katana")
     end
 })
 v618:AddButton({
-    Name = "Buy Iron Mace $25,000",
+    Name = "Buy Iron Mace [ $25,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem", "Iron Mace")
     end
 })
 v618:AddButton({
-    Name = "Buy Dual Katana $12,000",
+    Name = "Buy Dual Katana [ $12,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem", "Duel Katana")
     end
 })
 v618:AddButton({
-    Name = "Buy Triple Katana $60,000",
+    Name = "Buy Triple Katana [ $60,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem", "Triple Katana")
     end
 })
 v618:AddButton({
-    Name = "Buy Pipe $100,000",
+    Name = "Buy Pipe [ $100,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem", "Pipe")
     end
 })
 v618:AddButton({
-    Name = "Buy Dual-Headed Blade $400,000",
+    Name = "Buy Dual-Headed Blade [ $400,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem", "Dual-Headed Blade")
     end
 })
 v618:AddButton({
-    Name = "Buy Bisento $1,200,000",
+    Name = "Buy Bisento [ $1,200,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem", "Bisento")
     end
 })
 v618:AddButton({
-    Name = "Buy Soul Cane $750,000",
+    Name = "Buy Soul Cane [ $750,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem", "Soul Cane")
     end
 })
 v618:AddButton({
-    Name = "Buy Pole V2 5,000F",
+    Name = "Buy Pole V2 [ 5,000F ]",
     Callback = function()
         game.ReplicatedStorage.Remotes.CommF_:InvokeServer("ThunderGodTalk")
     end
 })
+v618:AddSection({
+    "Buy Gun"
+})
 v618:AddButton({
-    Name = "Buy Slingshot $5,000",
+    Name = "Buy Slingshot [ $5,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem", "Slingshot")
     end
 })
 v618:AddButton({
-    Name = "Buy Musket $8,000",
+    Name = "Buy Musket [ $8,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem", "Musket")
     end
 })
 v618:AddButton({
-    Name = "Buy Flintlock $10,500",
+    Name = "Buy Flintlock [ $10,500 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem", "Flintlock")
     end
 })
 v618:AddButton({
-    Name = "Refined Slingshot $30,000",
+    Name = "Refined Slingshot [ $30,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem", "Refined Flintlock")
     end
 })
 v618:AddButton({
-    Name = "Buy Refined Flintlock $65,000",
+    Name = "Buy Refined Flintlock [ $65,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack({
             "BuyItem",
@@ -11148,26 +11151,29 @@ v618:AddButton({
     end
 })
 v618:AddButton({
-    Name = "Buy Cannon $100,000",
+    Name = "Buy Cannon [ $100,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem", "Cannon")
     end
 })
 v618:AddButton({
-    Name = "Buy Kabucha 1,500F",
+    Name = "Buy Kabucha [ 1,500F ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BlackbeardReward", "Slingshot", "1")
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BlackbeardReward", "Slingshot", "2")
     end
 })
 v618:AddButton({
-    Name = "Buy Bizarre Rifle 250 Ectoplasm",
+    Name = "Buy Bizarre Rifle [ 250 Ectoplasm ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Ectoplasm", "Buy", 1)
     end
 })
+v618:AddSection({
+    "Armor"
+})
 v618:AddButton({
-    Name = "Buy Black Cape $50,000",
+    Name = "Buy Black Cape [ $50,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack({
             "BuyItem",
@@ -11176,7 +11182,7 @@ v618:AddButton({
     end
 })
 v618:AddButton({
-    Name = "Swordsman Hat $150,000",
+    Name = "Swordsman Hat [ $150,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack({
             "BuyItem",
@@ -11185,7 +11191,7 @@ v618:AddButton({
     end
 })
 v618:AddButton({
-    Name = "Buy Tomoe Ring $500,000",
+    Name = "Buy Tomoe Ring [ $500,000 ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack({
             "BuyItem",
@@ -11244,14 +11250,14 @@ v618:AddButton({
     end
 })
 v618:AddButton({
-    Name = "Reset Stats 2,500F",
+    Name = "Reset Stats [ 2,500F ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BlackbeardReward", "Refund", "1")
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BlackbeardReward", "Refund", "2")
     end
 })
 v618:AddButton({
-    Name = "Random Race 3,000F",
+    Name = "Random Race [ 3,000F ]",
     Callback = function()
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BlackbeardReward", "Reroll", "1")
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BlackbeardReward", "Reroll", "2")
