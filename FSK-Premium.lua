@@ -543,6 +543,7 @@ end
 local Window = WindUI:CreateWindow({
     Title = "Hutao Hub [Premium]",
     Icon = "rbxassetid://109995816235688", 
+    Background = "rbxassetid://130999733265467",
     Author = "Forsaken | By: SLK GAMING",
     Folder = "HutaoHub - WindUI",
     Size = UDim2.fromOffset(500, 350),
@@ -622,7 +623,7 @@ Color = ColorSequence.new({
 })
 
 Window:Tag({
-    Title = "v2.6.4",
+    Title = "v2.6.5",
     Color = Color3.fromHex("#30ff6a")
 })
 
